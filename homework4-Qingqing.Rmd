@@ -1,0 +1,423 @@
+---
+title: "Homework4--Qingqing Xu"
+output:
+  html_document:
+    df_print: paged
+---
+```{r}
+library(tidyverse)
+library(stringr)
+require(readr)
+library(data.table)
+library(readxl)
+```
+1.Questions in R for Data Science Chapter 14
+
+14.2.5 Exercise
+
+1.The difference between paste() and paste0() is that paste() separates strings by spaces by default while paste0() does not.The related string function to paste() is str_c(...,set=""). The related string function to paste0() is str_c(). The str_c and the paste function differ in handling of NA.The str_c function returns NA if there is any NA in the argument. We need to use str_replace_na() to print as "NA". The paste functions convert NA to character "NA" and then concatenate. The paste function uses str_replace_na by default.
+
+2.The collapse function comines a vector of strings into a single string. The sep function is to insert between input vectors. 
+
+3.Use str_length() and str_sub() to extract the middle character from a string. I will print the two middle characters if the string has an even number of characters to give the user the choice to pick the one they need.
+```{r}
+extract_middle <- function(x){
+  L <- str_length(x)
+  l <- length(L)
+  res <- c()
+  y <- vector(mode="character", length=l) 
+  i=1
+  while (i<=l) {
+  if (L[i] %% 2 ==0)
+  y[i] <- str_sub(x[i], L[i]/2, L[i]/2+1)
+else
+  y[i] <- str_sub(x[i], L[i]/2+0.5, L[i]/2+0.5)
+ res <- c(res,y[i])
+ i=i+1
+  }
+  res
+}
+
+x <- c("a", "abc", "abcd", "abcde", "abcdef")
+extract_middle(x)
+```
+4.The str_wrap() formats paragraphs. I might want to use it for wrapping long strings of text to be easy-to-read.
+
+5.str_trim() trims whitespace from start and end of string. The opposite of str_trim() is str_pad() which pads a string to a certain length with another string.
+
+6.A function that turns (e.g.) a vector c("a", "b", "c") into the string a, b, and c.
+```{r}
+vec_str <- function(x, sep = ", ", and = ", and ") {
+  if (length(x) > 1) {
+    if (length(x) == 2)
+    str_c(str_c(x[-length(x)], x[length(x)],sep=" and "))
+    else
+    str_c(str_c(x[-length(x)], collapse = sep),
+                x[length(x)],
+                sep = and)
+    }
+  else {
+    x
+  }
+}
+
+vec_str(c("a", "b", "c"))
+vec_str("")
+vec_str("a")
+vec_str(c("a", "b"))
+```
+
+14.3.1.1 Exercise
+
+1.each of these strings don’t match a \: "\", "\\", "\\\" because the backslash "\" is used as an escape symbol in strings.
+To match a literal \ we need to escape it by creating the regular expression \\. To create that regular expression, we need to use a string, which also needs to escape \. That means to match a literal \ e need to write "\\\\"
+
+2.I would match the sequence "'\ by doing:
+```{r}
+x = "\"'\\"
+writeLines(x)
+str_view(x, "\\\"'\\\\")
+```
+3.regular expression \..\..\.. match patterns .a.b.c
+```{r}
+str <- ".a.b.c"
+str_view(str, pattern = "\\..\\..\\..")
+```
+
+14.3.2.1 Exercises
+
+1.I would match the literal string "$^$ using:
+```{r}
+str <- "$^$"
+str_view(str, "\\$\\^\\$")
+```
+
+2.Create regular expressions that find all words that:
+```{r}
+str_view(words, "^y",match=TRUE) #Start with “y”
+str_view(words, "x$",match=TRUE) #End with “x”
+str_view(words, "^...$",match=TRUE) #Are exactly three letters long
+str_view(words, ".......",match=TRUE) #Have seven letters or more
+```
+
+14.3.3.1 Exercises
+
+1.Create regular expressions to find all words that:
+```{r}
+str_view(words, "^[aeiou]",match=TRUE) #Start with a vowel.
+str_view(words, "^[^aeiou]*$",match=TRUE) #That only contain consonants. (Hint: thinking about matching “not”-vowels.)
+str_view(words, "[^e]ed$", match = T) #End with ed, but not with eed.
+str_view(words, "i(ng|se)$", match = T) #End with ing or ise.
+```
+
+2.Empirically verify the rule “i before e except after c”.
+```{r}
+str_view(words, "([^c]|)ei", match = T)
+```
+
+3.Yes
+```{r}
+str_view(words, "q[^u]", match = T)
+```
+
+4.Write a regular expression that matches a word if it’s probably written in British English, not American English. Since British and American spelling are different in many ways, I give an example that "Verbs in British English that can be spelled with either -ize or -ise at the end are always spelled with -ize at the end in American English":
+```{r}
+str_view(words, "ise", match = T)
+```
+
+5.Create a regular expression that will match telephone numbers as commonly written in my country.
+
+```{r}
+phone_numbers <- c("(0086)-15267807935","(209)-123-4567")
+str_view(phone_numbers, "^\\(\\d{3}\\)-\\d{3}-\\d{4}",match=TRUE)
+```
+
+14.3.4.1 Exercises
+
+1.The equivalents of ? in {m,n} form is {0,1}.The equivalents of + in {m,n} form is {1,}. The equivalents of * in {m,n} form is {0,}
+
+2.^.*$  everything.
+"\\{.+\\}" have 1 or more character inside {}
+\d{4}-\d{2}-\d{2} (4 digits)-(2 digits)-(2 digits)
+"\\\\{4}" \\\\
+
+3.Create regular expressions to find all words that:
+```{r}
+str_view(words, "^[^aeiou]{3}", match = T) #Start with three consonants
+str_view(words, "[aeiou]{3,}", match = T) #Have three or more vowels in a row.
+str_view(words, "([aeiou][^aeiou]){2,}", match = T) #Have two or more vowel-consonant pairs in a row.
+```
+
+14.3.5.1 Exercises
+
+1.Describe, in words, what these expressions will match:
+```{r}
+str_view(words, "(.)\\1\\1", match = TRUE) #find words that have 3 same letters in a row
+str_view(words, "(.)(.)\\2\\1", match = TRUE) # find words that have a 4 letter pattern symmetrical with first 2 and last 2
+str_view(words, "(..)\\1", match = TRUE) #find words that have a repeated pair of letters.
+str_view(words, "(.).\\1.\\1", match = TRUE) #1st 3rd and 5th letters are same
+str_view(words, "(.)(.)(.).*\\3\\2\\1", match = TRUE) #last three letters are reversed of ths first 3 
+```
+
+2.Construct regular expressions to match words that:
+```{r}
+str_view(words, "^(.).*\\1$", match = T) #Start and end with the same character
+str_view(words, "(..).*\\1", match = T) #Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.)
+str_view(words, "(.).*\\1.*\\1", match = T) #Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)
+```
+
+14.4.2 Exercises
+
+1.Try solving it by using both a single regular expression, and a combination of multiple str_detect() calls.
+```{r}
+#Find all words that start or end with x.
+str_view(words, "^x|x$", match = TRUE)
+words[str_detect(words, "^x") | str_detect(words, "x$")]
+
+#Find all words that start with a vowel and end with a consonant.
+str_view(words, "^[aeiou].*[^aeoui]$", match = TRUE) 
+words[str_detect(words, "^[aeiou]") & str_detect(words, "[^aeiou]$")]
+
+#There is no word that contains at least one of each different vowel.
+words[str_detect(words, "a") & str_detect(words, "e") & str_detect(words, "o") & str_detect(words, "u") & str_detect(words, "i")]
+```
+
+2."appropriate,associate,available,colleague,encourage,experience,individual,television"" have the highest number of vowels. Word "a" has the highest proportion of vowels. 
+```{r}
+counts = str_count(words, "[aeiou]")
+lengths = str_length(words)
+result <- tibble(words = words, counts = counts, lengths = lengths)
+
+result %>%
+  filter(counts ==max(counts))
+
+result %>%
+  mutate(prop = counts / lengths) %>%
+  filter(prop ==max(prop))
+
+```
+
+14.4.3.1 Exercises
+
+1.Modify the regex with spaces to fix the problem that the regular expression matched “flickered”, which is not a colour.
+```{r}
+colours <- c("(\\n| )[Rr]ed(\\.| )", "(\\n| )[Oo]range(\\.| )", "(\\n| )[Yy]ellow(\\.| )", "(\\n| )[Gg]reen(\\.| )", "(\\n| )[Bb]lue(\\.| )", "(\\n| )[Pp]urple(\\.| )", "(\\n| )[Bb]rown(\\.| )")
+colour_match <- str_c(colours, collapse = "|")
+more <- sentences[str_count(sentences, colour_match) > 1]
+str_view_all(sentences, colour_match, match = TRUE)
+```
+
+2.From the Harvard sentences data, extract:
+```{r}
+
+str_extract(sentences, "^[A-Z][a-z]*\\b") #extract the first word from each sentence.
+str_extract(sentences, "([A-Z]|[a-z])[a-z]+ing(\\.|\\b)") #extract all words ending in ing.
+noun <- "(a|the) ([^ ]+)"
+    has_noun <- sentences %>%
+      str_subset(noun) 
+unique(unlist(str_extract_all(has_noun, "([a-z]|[A-Z])[a-z]+[^s|^'](s|es)\\b")))#extract all plurals. 
+```
+
+14.4.4.1 Exercises
+
+1.Find all words that come after a “number” like “one”, “two”, “three” etc. Pull out both the number and the word.
+```{r}
+numbers = c("one", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+numbers_match = str_c("(", str_c(numbers, collapse = "|"), ") [^ .]+")
+
+has_number <- str_subset(sentences, numbers_match)
+str_extract(has_number, numbers_match) %>% head(10)
+```
+
+2.Find all contractions. Separate out the pieces before and after the apostrophe.
+```{r}
+has_contraction = str_subset(sentences, "[^ ]+\\'[^ .]+")
+str_extract(has_contraction, "[^ ]+\\'[^ .]+")
+```
+
+14.4.5.1 Exercises
+
+1.Replace all forward slashes in a string with backslashes.
+```{r}
+backslashed <- str_replace_all("apple/banaba/orange", "\\/", "\\\\")
+writeLines(backslashed)
+```
+
+2.Implement a simple version of str_to_lower() using replace_all()
+```{r}
+lower <- str_replace_all(words, c("A"="a", "B"="b", "C"="c", "D"="d", "E"="e", "F"="f", "G"="g", "H"="h", "I"="i", "J"="j", "K"="k", "L"="l", "M"="m", "N"="n", "O"="o", "P"="p", "Q"="q", "R"="r", "S"="s", "T"="t", "U"="u", "V"="v", "W"="w", "X"="x", "Y"="y", "Z"="z"))
+```
+
+3.Switch the first and last letters in words.  are still words
+```{r}
+sw <- str_replace_all(words, "^([A-Za-z])(.*)([a-z])$", "\\3\\2\\1")
+intersect(sw,words)
+```
+
+14.4.6.1 Exercises
+
+1.Split up a string like "apples, pears, and bananas" into individual components.
+```{r}
+x <- c("apples, pears, and bananas")
+str_split(x, ", +(and +)?")[[1]]
+```
+
+2.It is bettwe to split up by boundary("word") than "" because boundary("word") splits on punctuation and not just whitespace.
+
+3.Splitting with an empty string ("") splits the string into individual characters.
+```{r}
+str_split("ab. cd|e\f/g\\h", "")[[1]]
+```
+
+14.5.1 Exercises
+
+1.Find all strings containing \ with regex() vs. with fixed()
+```{r}
+str_subset(c("a\\b", "ab"), "\\\\")
+str_subset(c("a\\b", "ab"), fixed("\\"))
+```
+
+2.What are the five most common words in sentences?
+```{r}
+str_extract_all(sentences, boundary("word")) %>%
+  unlist() %>%
+  str_to_lower() %>%
+  tibble() %>%
+  set_names("word") %>%
+  group_by(word) %>%
+  count(sort = TRUE) %>%
+  head(5)
+```
+
+14.7.1 Exercises
+
+1.stri_count_words #Count the number of words.
+  stri_duplicated #Find duplicated strings.
+  stri_rand_ #Generate random text.
+
+2.Use the locale argument to the opts_collator argument to control the language that stri_sort() uses for sorting.
+
+# The rest of the homework
+
+2.o3.filelist is a large list. It contains 7 lists which are tibbles with 4 columns "site","date","start_hour" and "obs". Different rows in the tibble represent each case.
+
+3.Using ~ 1 sentence per line in the above code, explain what each line in the code is doing
+```{r}
+library(tidyverse)
+require(readr)  #This package is to read rectangular text data
+setwd("/Users/zhongyueluan/es2018hw4") #Set my working directory
+o3.filenames <- list.files(pattern = ".txt")   #Produce a character vector of the names of files and save the result to object o3.filenames
+o3.filelist <- lapply(o3.filenames, read_delim, delim = "|") #Apply the read_delim function which read a delimited file (including csv & tsv) into a tibble and separate fields with "|" to o3.filenames. Apply the results to object o3.filelist. 
+names(o3.filelist) <- gsub(".txt","", o3.filenames) #Set the names of o3.filelist with a character vector of the same length and with the same attributes as o3.filenames
+library(data.table) #This package enhanced data.frame
+#Function rbindlist() makes one data.table from o3.filelist. Then function group_by() groups the data by site and date. Calculate the mean value of obs. Save the results to the object daily.
+daily <- o3.filelist %>%
+  rbindlist() %>%
+  group_by(site = as.factor(site), date) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+daily
+```
+
+4.Rewrite the code above using the stringr package insead of grep{base}. I used the str_replace() function instead of gsub().
+```{r}
+library(tidyverse)
+require(readr)
+setwd("/Users/zhongyueluan/es2018hw4")
+o3.filenames <- list.files(pattern = ".txt")
+o3.filelist <- lapply(o3.filenames, read_delim, delim = "|")
+names(o3.filelist) <- str_replace(o3.filenames, ".txt","")
+library(data.table)
+library(tidyverse)
+daily <- o3.filelist %>%
+  rbindlist() %>%
+  group_by(site = as.factor(site), date) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+daily
+```
+
+5.Rewrite the code above using traditional object-based R programming instead of the piping operator.
+```{r}
+library(data.table)
+library(tidyverse)
+rbl <- rbindlist(o3.filelist)
+g <- group_by(rbl,site = as.factor(site), date) 
+daily <- summarize(g,o3 = mean(obs, na.rm = TRUE))
+daily
+```
+
+6.Summarize the o3 data above by site and by month and by year using a piping operator (the monthly mean o3 for each site for each year).
+```{r}
+monthly <- o3.filelist %>%
+  rbindlist() %>%
+  mutate(year = format(date, "%Y"),month = format(date, "%m")) %>%
+  group_by(site = as.factor(site),year, month) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+monthly
+```
+
+7.Summarize the data to capture that diurnal pattern. According to hourly averaged Ozone concentrations in California from 1980 to 2011, Ozone concentration has a strong diurnal pattern with lowest concentration occured before sunrise (5:00 ~ 6:00) and highest at 14:00.
+```{r}
+hourly <- o3.filelist %>%
+  rbindlist() %>%
+  group_by(start_hour) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+ggplot(data=hourly)+
+  geom_point(mapping = aes(x = start_hour, y= o3))+
+  scale_x_continuous(breaks=hourly$start_hour)+
+  ggtitle("Hourly Averaged Ozone Concentrations in California 1980-2011")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  labs(
+       x = "Start_hour",
+        y = "Ozone concentrations"
+)
+```
+
+8.95 site names in the CA air quality location dataset “Site Name” contain “San” or “Santa”. 
+```{r}
+library(readxl)
+setwd("/Users/zhongyueluan/es2018hw4")
+loc <- read_excel("location.xls")
+loc
+colnames(loc)[1] <- "site"
+toMatch <- c("San","Santa")
+sum(str_detect(unique(loc$`Site Name`), paste(toMatch,collapse="|")))
+
+```
+
+9.23 sites do not have a complete address (full street address and zip code).
+```{r}
+sum(is.na(loc$Address))
+sum(is.na(loc$`Zip Code`))
+length(unique(loc[is.na(loc$Address) | is.na(loc$`Zip Code`),]$Site))
+```
+
+10.The semi join() differ from an inner join() in only keeping the columns from x while inner join() keeping all columns from x and y.
+
+11.My function Annual_mean_median_max_min() is to calculate the annual mean, median, max and min of all sites that have either of the two special strings in the Site Name. Input x is the original list data. Input y and z is the special strings. In this case, x is o3.filelist. y and z are  “San” or “Santa”.
+```{r}
+  Annual_mean_median_max_min <- function(x,y,z){
+    annual <- x %>%
+  rbindlist() %>%
+  group_by(site = as.factor(site))%>%
+  semi_join(filter(loc, grepl(paste(c(y,z), collapse="|"), loc$`Site Name`)), by = "site")%>%
+                  mutate(year = format(date, "%Y")) %>%
+                  group_by(site,year) %>%
+   summarize(annual_mean = mean(obs, na.rm = TRUE), annual_median = median(obs, na.rm = TRUE),annual_max = max(obs, na.rm = TRUE),annual_min = min(obs, na.rm = TRUE) )
+    annual
+    }
+Annual_mean_median_max_min(o3.filelist,"San","Santa") 
+```
+
+
+12.My function annual_daily_mean() is to caculate the annual daily mean. Apply that function to Merced County. The annual daily mean of o3 for Merced County is shown in the dataframe "annual_daily_mean".
+```{r}
+annual_daily_mean <- function (x,y){
+  annual_daily_mean <- x %>%
+  semi_join(subset(loc,loc$`County Name`==y), by = "site")%>%
+                  mutate(year = format(date, "%Y")) %>%
+                  group_by(year) %>% 
+   summarize(annual_daily_mean = mean(o3, na.rm = TRUE))
+ annual_daily_mean 
+}
+annual_daily_mean(daily,"Merced")
+```
