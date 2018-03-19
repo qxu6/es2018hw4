@@ -21,25 +21,25 @@ library(readxl)
 
 3.Use str_length() and str_sub() to extract the middle character from a string. I will print the two middle characters if the string has an even number of characters to give the user the choice to pick the one they need.
 ```{r}
-extract_middle <- function(x){
-  L <- str_length(x)
-  l <- length(L)
-  res <- c()
-  y <- vector(mode="character", length=l) 
-  i=1
-  while (i<=l) {
-  if (L[i] %% 2 ==0)
-  y[i] <- str_sub(x[i], L[i]/2, L[i]/2+1)
-else
-  y[i] <- str_sub(x[i], L[i]/2+0.5, L[i]/2+0.5)
- res <- c(res,y[i])
- i=i+1
-  }
-  res
-}
+# the previous function was rather lengthy and contained a while loop
+# the code below is much shorter (this is what I used in my assignment)
+# by using floor and ceiling we can round up or round down for even number characters
+
+middleChr <- function(x){
+  #length of string +1 divided by 2
+  L <- (str_length(x)+1)/2
+  # floor rounds down
+  # ceiling rounds up
+  mid <- str_sub(x,floor(L),ceiling(L))
+  return(mid)
+}##
+
 
 x <- c("a", "abc", "abcd", "abcde", "abcdef")
-extract_middle(x)
+middleChr(x)
+
+
+
 ```
 4.The str_wrap() formats paragraphs. I might want to use it for wrapping long strings of text to be easy-to-read.
 
@@ -375,8 +375,8 @@ ggplot(data=hourly)+
 8.95 site names in the CA air quality location dataset “Site Name” contain “San” or “Santa”. 
 ```{r}
 library(readxl)
-setwd("/Users/zhongyueluan/es2018hw4")
-loc <- read_excel("location.xls")
+setwd("C:\\Users\\cade\\Documents\\PhDMerced\\Spr18Courses\\EnvironmentalDataAnalysis\\Homework\\Lab4\\es2018_Hw4\\Data\\ca_ozone\\")
+loc <- read_excel("C:\\Users\\cade\\Documents\\PhDMerced\\Spr18Courses\\EnvironmentalDataAnalysis\\Homework\\Lab4\\es2018_Hw4\\Data\\ca_ozone\\location.xls")
 loc
 colnames(loc)[1] <- "site"
 toMatch <- c("San","Santa")
@@ -389,6 +389,22 @@ sum(str_detect(unique(loc$`Site Name`), paste(toMatch,collapse="|")))
 sum(is.na(loc$Address))
 sum(is.na(loc$`Zip Code`))
 length(unique(loc[is.na(loc$Address) | is.na(loc$`Zip Code`),]$Site))
+
+## there are several sites that did had addresses and zipcodes that were not complete, but did not have NA'S
+# What is your final answer here?
+# If you look at the data several of "na" values are actually Location Approximate or Address not known instead of NA> 
+
+# below is my answer
+
+# First remove those rows that have Location Approximate, Address Not Known
+newloc <- loc %>% filter(!str_detect(Address, 'Location Approximate|Address Not Known')) %>%
+  # some of zipcodes have NA, remove those
+  filter(!str_detect(`Zip Code`,"NA")) %>% 
+  # remove rows with zipcodes that have less than 5 numbers
+  filter(str_detect(`Zip Code`,"[0-9]{5}")) %>%
+  # address pattern must be at least 1 number, then some letters or start with a P.O box because there is
+  # one valid address that starts with P.O. Box
+  newloc %>% filter(str_detect(Address,"^([0-9]|P\\.O\\.){1,}(.){1,}"))
 ```
 
 10.The semi join() differ from an inner join() in only keeping the columns from x while inner join() keeping all columns from x and y.
